@@ -27,7 +27,7 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
 
-        // API for instructors
+        // API for instructors and Classes
         const instructorsCollection = client.db("SummerCamp").collection("instructors");
 
 
