@@ -33,12 +33,17 @@ async function run() {
         const selectedClassCollection = client.db("SummerCamp").collection("selectedClasses");
 
 // -----------------GET----------------------------//
-
+        // Instructors API
         app.get('/instructors', async (req, res) => {
             const result = await instructorsCollection.find().toArray();
             res.send(result);
         })
 
+        // Users API
+        app.get('/users',async (req,res) =>{
+            const result = await usersCollection.find().toArray();
+            res.send(result)
+        })
 
         // Selected Classes API
 
@@ -57,6 +62,7 @@ async function run() {
         // User Database 
         app.post('/users', async (req, res) => {
             const user = req.body;
+            console.log(user);
             const query = { email: user.email }
             const existingUser = await usersCollection.findOne(query);
       
@@ -83,6 +89,14 @@ async function run() {
         const id = req.params.id;
         const query ={_id: new ObjectId(id)}
         const result = await selectedClassCollection.deleteOne(query);
+        res.send(result);
+      })
+
+    //   Delete Users
+    app.delete('/users/:id', async (req, res) => {
+        const id = req.params.id;
+        const query ={_id: new ObjectId(id)}
+        const result = await usersCollection.deleteOne(query);
         res.send(result);
       })
 
