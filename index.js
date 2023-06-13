@@ -9,19 +9,20 @@ const port = process.env.PORT || 7052;
 app.use(cors());
 app.use(express.json());
 
+// --------------JWT verification-----------------------//
 
-const verifyJWT= (req,res,next) =>{
-    const authorization =req.headers.authorization;
-    if(!authorization){
-        return res.status(401).send({error: true, message: 'Unauthorize Access'} );
+const verifyJWT = (req, res, next) => {
+    const authorization = req.headers.authorization;
+    if (!authorization) {
+        return res.status(401).send({ error: true, message: 'Unauthorize Access' });
     }
 
     const token = authorization.split('')[1];
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-        if(err){
-            return res.status(401).send({error: true, message: 'Unauthorize Access'});
+        if (err) {
+            return res.status(401).send({ error: true, message: 'Unauthorize Access' });
         }
-        req.decoded =decoded;
+        req.decoded = decoded;
         next();
     })
 }
@@ -50,7 +51,12 @@ async function run() {
         const usersCollection = client.db("SummerCamp").collection("users");
         const selectedClassCollection = client.db("SummerCamp").collection("selectedClasses");
 
+
+
         // -----------------GET----------------------------//
+
+
+
         // Instructors API
         app.get('/instructors', async (req, res) => {
             const result = await instructorsCollection.find().toArray();
@@ -65,16 +71,36 @@ async function run() {
 
         // Selected Classes API
 
-        app.get('/selectedClasses', async (req, res) => {
+        app.get('/selectedClasses', verifyJWT, async (req, res) => {
             const email = req.query.email;
             console.log(email);
             if (!email) {
                 res.send([]);
             }
+
+            const decodedEmail = req.decoded.email;
+            if (email != decodedEmail) {
+                return res.status(403).send({ error: true, message: 'Forbidden Access' })
+            }
             const query = { email: email };
             const result = await selectedClassCollection.find(query).toArray();
             res.send(result);
         })
+
+
+        // Get User Admin
+        app.get('/users/admin/:email',verifyJWT, async(req,res) =>{
+            const email =req.params.email;
+            if(req.decoded.email != email){
+                res.send({admin: false})
+            }
+
+            const query = {email: email};
+            const user =await usersCollection.findOne(query);
+            const result = { admin: user?.role ==='admin'}
+            res.send(result)
+        })
+        
 
         //-------------------POST-------------------------//
 
@@ -111,7 +137,7 @@ async function run() {
 
         // ------------------PATCH--------------------------//
 
-        //make Admin// 
+        //                   make Admin               // 
         app.patch('/users/admin/:id', async (req, res) => {
             const id = req.params.id;
             console.log(id);
