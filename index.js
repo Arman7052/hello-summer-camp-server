@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 require('dotenv').config();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 7052;
 // middleware
 
 app.use(cors());
@@ -30,14 +30,16 @@ async function run() {
         // API for instructors and Classes
         const instructorsCollection = client.db("SummerCamp").collection("instructors");
         const usersCollection = client.db("SummerCamp").collection("users");
+        const selectedClassCollection = client.db("SummerCamp").collection("selectedClasses");
 
+// -----------------GET----------------------------//
 
         app.get('/instructors', async (req, res) => {
             const result = await instructorsCollection.find().toArray();
             res.send(result);
         })
 
-
+//-------------------POST-------------------------//
         // User Database 
         app.post('/users', async (req, res) => {
             const user = req.body;
@@ -52,7 +54,12 @@ async function run() {
             res.send(result);
           });
 
-
+        //   Selected Classes Database
+        app.post('/selectedClasses', async (req, res) => {
+            const item = req.body;
+            const result= await selectedClassCollection.insertOne(item);
+            res.send(result);
+        })
 
 
 
