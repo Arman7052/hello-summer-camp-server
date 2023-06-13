@@ -10,7 +10,7 @@ app.use(express.json());
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.pf5eojy.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -39,6 +39,20 @@ async function run() {
             res.send(result);
         })
 
+
+        // Selected Classes API
+
+        app.get('/selectedClasses',async(req,res) =>{
+            const email = req.query.email;
+            console.log(email);
+            if(!email){
+                res.send([]);
+            }
+            const query = {email: email};
+            const result = await selectedClassCollection.find(query).toArray();
+            res.send(result);
+        })
+
 //-------------------POST-------------------------//
         // User Database 
         app.post('/users', async (req, res) => {
@@ -60,7 +74,17 @@ async function run() {
             const result= await selectedClassCollection.insertOne(item);
             res.send(result);
         })
+// ----------------------Delete--------------------//
 
+        // Delete Selected Classes
+        
+
+    app.delete('/selectedClasses/:id', async (req, res) => {
+        const id = req.params.id;
+        const query ={_id: new ObjectId(id)}
+        const result = await selectedClassCollection.deleteOne(query);
+        res.send(result);
+      })
 
 
 
