@@ -32,7 +32,7 @@ async function run() {
         const usersCollection = client.db("SummerCamp").collection("users");
         const selectedClassCollection = client.db("SummerCamp").collection("selectedClasses");
 
-// -----------------GET----------------------------//
+        // -----------------GET----------------------------//
         // Instructors API
         app.get('/instructors', async (req, res) => {
             const result = await instructorsCollection.find().toArray();
@@ -40,65 +40,98 @@ async function run() {
         })
 
         // Users API
-        app.get('/users',async (req,res) =>{
+        app.get('/users', async (req, res) => {
             const result = await usersCollection.find().toArray();
             res.send(result)
         })
 
         // Selected Classes API
 
-        app.get('/selectedClasses',async(req,res) =>{
+        app.get('/selectedClasses', async (req, res) => {
             const email = req.query.email;
             console.log(email);
-            if(!email){
+            if (!email) {
                 res.send([]);
             }
-            const query = {email: email};
+            const query = { email: email };
             const result = await selectedClassCollection.find(query).toArray();
             res.send(result);
         })
 
-//-------------------POST-------------------------//
+        //-------------------POST-------------------------//
         // User Database 
         app.post('/users', async (req, res) => {
             const user = req.body;
             console.log(user);
             const query = { email: user.email }
             const existingUser = await usersCollection.findOne(query);
-      
+
             if (existingUser) {
-              return res.send({ message: 'user already exists' })
+                return res.send({ message: 'user already exists' })
             }
-      
+
             const result = await usersCollection.insertOne(user);
             res.send(result);
-          });
+        });
 
         //   Selected Classes Database
         app.post('/selectedClasses', async (req, res) => {
             const item = req.body;
-            const result= await selectedClassCollection.insertOne(item);
+            const result = await selectedClassCollection.insertOne(item);
             res.send(result);
         })
-// ----------------------Delete--------------------//
+
+        // ------------------PATCH--------------------------//
+        
+        //make Admin// 
+        app.patch('/users/admin/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(id);
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    role: 'admin'
+                }
+            };
+            const result = await usersCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+
+        // Make Instructor
+        app.patch('/users/instructor/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(id);
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    role: 'instructor'
+                }
+            };
+            const result = await usersCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+
+
+
+        // ----------------------Delete--------------------//
 
         // Delete Selected Classes
-        
 
-    app.delete('/selectedClasses/:id', async (req, res) => {
-        const id = req.params.id;
-        const query ={_id: new ObjectId(id)}
-        const result = await selectedClassCollection.deleteOne(query);
-        res.send(result);
-      })
 
-    //   Delete Users
-    app.delete('/users/:id', async (req, res) => {
-        const id = req.params.id;
-        const query ={_id: new ObjectId(id)}
-        const result = await usersCollection.deleteOne(query);
-        res.send(result);
-      })
+        app.delete('/selectedClasses/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await selectedClassCollection.deleteOne(query);
+            res.send(result);
+        })
+
+        //   Delete Users
+        app.delete('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await usersCollection.deleteOne(query);
+            res.send(result);
+        })
 
 
 
